@@ -37,7 +37,6 @@ void loop(){
   if(XBEE.available() > 0)
   {
     SerChar = XBEE.read();
-    XBEE.println("Got Full Command");
   }
   //Enable Motors
   digitalWrite(D2pin, HIGH);
