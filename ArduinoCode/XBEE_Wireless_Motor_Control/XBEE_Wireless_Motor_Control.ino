@@ -33,14 +33,19 @@ void setup(){
 } 
 
 void loop(){
+  //set motor speed state back to 0 for next update
+  analogWrite(MRPWMPin, 0);
+  analogWrite(MLPWMPin, 0);
+  SerChar = 0;
   //see if there is anything in serial buffer
   if(XBEE.available() > 0)
   {
     SerChar = XBEE.read();
+    XBEE.println("ACK");
   }
   //Enable Motors
   digitalWrite(D2pin, HIGH);
-
+  Serial.println(SerChar);
   // direction values for specific motors may need to be flipped. 
   // The directions are assumed currently; they are not tested
   if(SerChar == 'r')
