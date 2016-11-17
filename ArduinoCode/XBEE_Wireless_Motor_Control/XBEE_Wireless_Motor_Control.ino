@@ -15,6 +15,7 @@ int MLDirPin = 4;
 int MRDirPin = 7;
 int D2pin = 3;
 int SFpin = 2;
+int LineSensePin = 8;
 
 int RMotorSpeed, LMotorSpeed = 0;
 char DirChar;
@@ -32,6 +33,7 @@ void setup() {
   pinMode(MLPWMPin, OUTPUT);
   pinMode(MRDirPin, OUTPUT);
   pinMode(MRPWMPin, OUTPUT);
+  pinMode(LineSensePin, INPUT);
 }
 
 void loop() {
@@ -94,6 +96,8 @@ void loop() {
   Serial.print(RMotorSpeed);
   Serial.print(",");
   Serial.println(digitalRead(MRDirPin));
+  Serial.print("LineSensor Read value: ");
+  Serial.println(digitalRead(LineSensePin));
   Serial.println();
   delay(5);
 }
