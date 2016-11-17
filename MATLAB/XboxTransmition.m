@@ -12,8 +12,8 @@ pause(0.5);
 
 while(1)
     var = read(joy);
-    LeftY = 10*(1 + var(2))
-    RightY = 10*(1+ var(5))
+    LeftY = 200*(1 + var(2))
+    RightY = 200*(1+ var(5))
     fprintf(port,  strcat('l', num2str((LeftY))))
     fprintf(port,  strcat('r', num2str((RightY))))
     pause(.25)
