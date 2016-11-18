@@ -9,14 +9,17 @@
 #define XBEE Serial1
 
 //motor pin constants
-int MLPWMPin = 5;
-int MRPWMPin = 6;
-int MLDirPin = 4;
-int MRDirPin = 7;
-int D2pin = 3;
-int SFpin = 2;
-int LineSensePin = 8;
+const int MLPWMPin = 5;
+const int MRPWMPin = 6;
+const int MLDirPin = 4;
+const int MRDirPin = 7;
+const int D2pin = 3;
+const int SFpin = 2;
 
+//Line Sensor Pin declaration
+const int LineSensorPin = 8;
+
+//Serial read variables
 int RMotorSpeed, LMotorSpeed = 0;
 char DirChar;
 float LSerFloat = 0;
@@ -33,7 +36,6 @@ void setup() {
   pinMode(MLPWMPin, OUTPUT);
   pinMode(MRDirPin, OUTPUT);
   pinMode(MRPWMPin, OUTPUT);
-  pinMode(LineSensePin, INPUT);
 }
 
 void loop() {
@@ -97,7 +99,19 @@ void loop() {
   Serial.print(",");
   Serial.println(digitalRead(MRDirPin));
   Serial.print("LineSensor Read value: ");
-  Serial.println(digitalRead(LineSensePin));
+  Serial.println(readQD(LineSensorPin));
   Serial.println();
   delay(5);
+}
+
+int readQD(int LineSensePin) {
+  pinMode(LineSensePin, OUTPUT);
+  digitalWrite(LineSensePin, HIGH);
+  delayMicroseconds(10);
+  pinMode(LineSensePin, INPUT);
+
+  long curTime = micros();
+
+  while (digitalRead(LineSensePin) && (micros() - curTime) < 3000);
+  return micros() - curTime;
 }
