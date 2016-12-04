@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model, datasets
 
-dataseta = pd.read_csv('../data/weather_data.csv', header =-1)
+dataseta = pd.read_csv('~/CHAAC_Code/Python/data/weather_data.csv', header =-1)
 dataset=dataseta.as_matrix()
 data=np.zeros((365,8))
 data= dataset
