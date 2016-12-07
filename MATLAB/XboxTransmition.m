@@ -12,8 +12,14 @@ pause(0.5);
 
 while(1)
     var = read(joy);
+    b1 = button(joy, 3)
+    b2 = button(joy, 4)
     LeftY = 200*(1 + var(2))
     RightY = 200*(1+ var(5))
+    if b1 == 1
+        fprintf(port, 's')
+    if b2 == 1
+        fprintf(port, 'w')
     fprintf(port,  strcat('l', num2str((LeftY))))
     fprintf(port,  strcat('r', num2str((RightY))))
     pause(.25)
