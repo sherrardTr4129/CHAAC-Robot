@@ -15,6 +15,11 @@ int readQD(int LineSensePin);
 long GetCentimetersFromPING(int PingPin);
 void calcVelB(void);
 void calcVelA(void);
+void CloudyDance(void);
+void StormyDance(void);
+void SnowyDance(void);
+void ClearDance(void);
+void RainyDance(void);
 
 QuadBase *encoderA = new QuadDecoder<1>();
 IntervalTimer velTimerA;
@@ -46,7 +51,8 @@ const int D2pin = 3;
 const int SFpin = 2;
 
 //Sensor Pin declarations
-const int LineSensorPin = 8;
+const int RaspberryPiInterrupt = 19;
+const int LineSensorPin = 15;
 const int PINGPin = 10;
 long duration, cm = 0;
 
@@ -61,6 +67,8 @@ float RSerFloat = 0;
 //Mode State Variable
 bool isWeatherMode = false;
 
+//Predicted Weather Character
+char WeatherDanceChar = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -105,7 +113,7 @@ void loop() {
     //On the Line, step off to the right
     if (readQD(LineSensorPin) < LineThreshold)
     {
-      digitalWrite(MLDirPin, LOW);
+      digitalWrite(MLDirPin, HIGH);
       digitalWrite(MRDirPin, HIGH);
       analogWrite(MRPWMPin, 128);
       analogWrite(MLPWMPin, 128);
@@ -114,9 +122,36 @@ void loop() {
     else
     {
       digitalWrite(MLDirPin, LOW);
+      digitalWrite(MRDirPin, LOW);
+      analogWrite(MRPWMPin, 128);
+      analogWrite(MLPWMPin, 128);
+    }
+    if (GetCentimetersFromPING(PINGPin) < 16)
+    {
+      //turn right
+      digitalWrite(MLDirPin, LOW);
       digitalWrite(MRDirPin, HIGH);
       analogWrite(MRPWMPin, 128);
       analogWrite(MLPWMPin, 128);
+      delay(800);
+      //go forward
+      digitalWrite(MLDirPin, HIGH);
+      digitalWrite(MRDirPin, HIGH);
+      analogWrite(MRPWMPin, 255);
+      analogWrite(MLPWMPin, 255);
+      delay(800);
+      //Turn Left
+      digitalWrite(MLDirPin, HIGH);
+      digitalWrite(MRDirPin, LOW);
+      analogWrite(MRPWMPin, 255);
+      analogWrite(MLPWMPin, 255);
+      delay(800);
+      //go forward Until Line Detected
+      digitalWrite(MLDirPin, HIGH);
+      digitalWrite(MRDirPin, HIGH);
+      analogWrite(MRPWMPin, 255);
+      analogWrite(MLPWMPin, 255);
+      while (readQD(LineSensorPin) < LineThreshold);
     }
   }
   else if (isWeatherMode)
@@ -165,7 +200,35 @@ void loop() {
         RMotorSpeed = 0;
       }
     }
-
+    else if (DirChar == 'w')
+    {
+      analogWrite(MRPWMPin, 0);
+      analogWrite(MLPWMPin, 0);
+      digitalWrite(RaspberryPiInterrupt, HIGH);
+      delayMicroseconds(100);
+      digitalWrite(RaspberryPiInterrupt, LOW);
+      while (Serial.available() <= 0);
+      WeatherDanceChar = Serial.read();
+      switch (WeatherDanceChar)
+      {
+        case 's':
+          StormyDance();
+          break;
+        case 'c':
+          CloudyDance();
+          break;
+        case 'n':
+          SnowyDance();
+          break;
+        case 'l':
+          ClearDance();
+          break;
+        case 'r':
+          RainyDance();
+          break;
+      }
+    }
+    //write motorvalues
     analogWrite(MRPWMPin, RMotorSpeed);
     analogWrite(MLPWMPin, LMotorSpeed);
   }
@@ -222,8 +285,30 @@ void calcVelA(void)
 void calcVelB(void)
 {
   // Use the getCount function to determine the change in counts
-  // remeber to update oldCntA
+  // remeber to update oldCntB
   newCntB = encoderB->getCount();
   diffB = newCntB - oldCntB;
   oldCntB = newCntB;
 }
+
+void CloudyDance(void)
+{
+  
+}
+void StormyDance(void)
+{
+  
+}
+void SnowyDance(void)
+{
+  
+}
+void ClearDance(void)
+{
+  
+}
+void RainyDance(void)
+{
+  
+}
+
