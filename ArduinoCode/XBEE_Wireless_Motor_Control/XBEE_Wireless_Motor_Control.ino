@@ -10,14 +10,18 @@
 #include <ADC.h>
 #define mod 2249  // Number of ticks per wheel revolution
 #define XBEE Serial1
+//function Prototypes
 int readQD(int LineSensePin);
+long GetCentimetersFromPING(int PingPin);
+void calcVelB(void);
+void calcVelA(void);
 
 QuadBase *encoderA = new QuadDecoder<1>();
-IntervalTimer velTimerM2;
+IntervalTimer velTimerA;
 
 
-QuadBase *encoderB = new QuadDecoder<1>();
-IntervalTimer velTimerM1;
+QuadBase *encoderB = new QuadDecoder<2>();
+IntervalTimer velTimerB;
 
 
 // variables to be used in the timer interrupt
@@ -26,12 +30,12 @@ volatile int newCntA = 0; //  new value to use in calculating difference
 volatile int diffA = 0; // difference between newCntA and oldCntA
 volatile  int oldCntB = 0; // used to store the count the last time you calculated
 volatile int newCntB = 0; //  new value to use in calculating difference
-volatile int diffB = 0; // difference between newCntA and oldCntA
+volatile int diffB = 0; // difference between newCntB and oldCntB
 
+//Conversion Constants
 const double rpmConvert =  2.667; // rev/min = cnt/us * us/sec * sec/min * rev/cnt
 const int period = 10000; // in microseconds
-
-
+int LineThreshold = 1000;
 
 //motor pin constants
 const int MLPWMPin = 5;
@@ -41,8 +45,11 @@ const int MRDirPin = 7;
 const int D2pin = 3;
 const int SFpin = 2;
 
-//Line Sensor Pin declaration
+//Sensor Pin declarations
 const int LineSensorPin = 8;
+const int PINGPin = 10;
+long duration, cm = 0;
+
 
 //Serial read variables
 int RMotorSpeed, LMotorSpeed = 0;
@@ -51,9 +58,23 @@ float LSerFloat = 0;
 float RSerFloat = 0;
 
 
+//Mode State Variable
+bool isWeatherMode = false;
+
+
 void setup() {
   Serial.begin(9600);
   XBEE.begin(9600);
+  //EncoderA Init
+  encoderA->init(mod, 0);
+  encoderA->setFilter(31);
+  encoderA->reset();
+  encoderA->begin();
+  //EncoderB Init
+  encoderB->init(mod, 0);
+  encoderB->setFilter(31);
+  encoderB->reset();
+  encoderB->begin();
   //motor pin assignments
   pinMode(SFpin, INPUT);
   pinMode(D2pin, OUTPUT);
@@ -61,17 +82,48 @@ void setup() {
   pinMode(MLPWMPin, OUTPUT);
   pinMode(MRDirPin, OUTPUT);
   pinMode(MRPWMPin, OUTPUT);
+  //start timer interrupts
+  velTimerA.begin(calcVelA, period);
+  velTimerB.begin(calcVelB, period);
+  //Enable Motors
+  digitalWrite(D2pin, HIGH);
 }
 
 void loop() {
-  //set motor speed state back to 0 for next update
-  analogWrite(MRPWMPin, 0);
-  analogWrite(MLPWMPin, 0);
-  digitalWrite(D2pin, HIGH);
+
   //see if there is anything in serial buffer
   if (XBEE.available() > 0)
   {
     DirChar = XBEE.read();
+    if (DirChar == 's')
+    {
+      isWeatherMode = !isWeatherMode;
+    }
+  }
+  if (!isWeatherMode)
+  {
+    //On the Line, step off to the right
+    if (readQD(LineSensorPin) < LineThreshold)
+    {
+      digitalWrite(MLDirPin, LOW);
+      digitalWrite(MRDirPin, HIGH);
+      analogWrite(MRPWMPin, 128);
+      analogWrite(MLPWMPin, 128);
+    }
+    //Off the line, step on from the left
+    else
+    {
+      digitalWrite(MLDirPin, LOW);
+      digitalWrite(MRDirPin, HIGH);
+      analogWrite(MRPWMPin, 128);
+      analogWrite(MLPWMPin, 128);
+    }
+  }
+  else if (isWeatherMode)
+  {
+    //set motor speed state back to 0 for next update
+    analogWrite(MRPWMPin, 0);
+    analogWrite(MLPWMPin, 0);
     if (DirChar == 'l')
     {
       LSerFloat = XBEE.parseFloat();
@@ -92,7 +144,8 @@ void loop() {
         LMotorSpeed = 0;
       }
     }
-    else if (DirChar == 'r') {
+    else if (DirChar == 'r')
+    {
       RSerFloat = XBEE.parseFloat();
       if (RSerFloat < 150)
       {
@@ -112,10 +165,10 @@ void loop() {
         RMotorSpeed = 0;
       }
     }
-  }
-  analogWrite(MRPWMPin, RMotorSpeed);
-  analogWrite(MLPWMPin, LMotorSpeed);
 
+    analogWrite(MRPWMPin, RMotorSpeed);
+    analogWrite(MLPWMPin, LMotorSpeed);
+  }
   Serial.print("Speed L, MotorDir: " );
   Serial.print(LMotorSpeed);
   Serial.print(",");
@@ -127,7 +180,8 @@ void loop() {
   Serial.print("LineSensor Read value: ");
   Serial.println(readQD(LineSensorPin));
   Serial.println();
-  delay(5);
+  Serial.print("isWeatherMode? ");
+  Serial.println(isWeatherMode);
 }
 
 int readQD(int LineSensePin) {
@@ -140,4 +194,36 @@ int readQD(int LineSensePin) {
 
   while (digitalRead(LineSensePin) && (micros() - curTime) < 3000);
   return micros() - curTime;
+}
+
+long GetCentimetersFromPING(int pingPin)
+{
+  pinMode(pingPin, OUTPUT);
+  digitalWrite(pingPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pingPin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pingPin, LOW);
+  pinMode(pingPin, INPUT);
+  duration = pulseIn(pingPin, HIGH);
+  return duration / 29 / 2;
+}
+
+
+void calcVelA(void)
+{
+  // Use the getCount function to determine the change in counts
+  // remeber to update oldCntA
+  newCntA = encoderA->getCount();
+  diffA = newCntA - oldCntA;
+  oldCntA = newCntA;
+}
+
+void calcVelB(void)
+{
+  // Use the getCount function to determine the change in counts
+  // remeber to update oldCntA
+  newCntB = encoderB->getCount();
+  diffB = newCntB - oldCntB;
+  oldCntB = newCntB;
 }
