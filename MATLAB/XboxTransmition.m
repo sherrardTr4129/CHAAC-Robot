@@ -16,6 +16,6 @@ while(1)
     RightY = 200*(1+ var(5))
     fprintf(port,  strcat('l', num2str((LeftY))))
     fprintf(port,  strcat('r', num2str((RightY))))
-    pause(.25)
+    pause(.1)
 end
 fclose(port)
