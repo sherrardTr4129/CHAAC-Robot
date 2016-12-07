@@ -22,6 +22,6 @@ while(1)
         fprintf(port, 'w')
     fprintf(port,  strcat('l', num2str((LeftY))))
     fprintf(port,  strcat('r', num2str((RightY))))
-    pause(.25)
+    pause(.1)
 end
 fclose(port)
