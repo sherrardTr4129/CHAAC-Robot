@@ -42,6 +42,7 @@ void loop() {
   //set motor speed state back to 0 for next update
   analogWrite(MRPWMPin, 0);
   analogWrite(MLPWMPin, 0);
+  digitalWrite(D2pin, HIGH);
   //see if there is anything in serial buffer
   if (XBEE.available() > 0)
   {
