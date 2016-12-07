@@ -52,13 +52,13 @@ void loop() {
       LSerFloat = XBEE.parseFloat();
       if (LSerFloat < 120)
       {
-        digitalWrite(MLDirPin, LOW);
+        digitalWrite(MLDirPin, HIGH);
         LMotorSpeed = map(int(LSerFloat), 0, 400, 255, 0);
 
       }
       else if (LSerFloat > 210)
       {
-        digitalWrite(MLDirPin, HIGH);
+        digitalWrite(MLDirPin, LOW);
         LMotorSpeed = map(int(LSerFloat), 0, 400, 0, 255);
 
       }
