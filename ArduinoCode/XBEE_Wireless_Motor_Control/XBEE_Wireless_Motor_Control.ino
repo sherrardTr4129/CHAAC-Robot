@@ -6,7 +6,10 @@
  ** Date: 11/18/2016
  ** File: XBEE_Wireless_Motor_Control.ino
  *************************************************/
+#include <SparkFunBME280.h>
 #include "QuadDecoder.h"
+#include "Wire.h"
+#include "SPI.h"
 #include <ADC.h>
 #define mod 2249  // Number of ticks per wheel revolution
 #define XBEE Serial1
@@ -52,7 +55,7 @@ const int SFpin = 2;
 
 //Sensor Pin declarations
 const int RaspberryPiInterrupt = 19;
-const int LineSensorPin = 15;
+const int LineSensorPin = 12;
 const int PINGPin = 10;
 long duration, cm = 0;
 
@@ -63,12 +66,16 @@ char DirChar;
 float LSerFloat = 0;
 float RSerFloat = 0;
 
-
 //Mode State Variable
 bool isWeatherMode = false;
 
 //Predicted Weather Character
 char WeatherDanceChar = 0;
+//Sparkfun BME280 Sensor Object
+BME280 mySensor;
+float Temp_F = 0;
+float Pressure = 0;
+float Rel_Humidity = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -93,12 +100,24 @@ void setup() {
   //start timer interrupts
   velTimerA.begin(calcVelA, period);
   velTimerB.begin(calcVelB, period);
+  //Setup Sparkfun BME280
+  mySensor.settings.commInterface = I2C_MODE;
+  mySensor.settings.I2CAddress = 0x77;
+  mySensor.settings.runMode = 3; //Normal mode
+  mySensor.settings.tStandby = 0;
+  mySensor.settings.filter = 0;
+  mySensor.settings.tempOverSample = 1;
+  mySensor.settings.pressOverSample = 1;
+  mySensor.settings.humidOverSample = 1;
+  delay(10);
+  mySensor.begin();
+
   //Enable Motors
   digitalWrite(D2pin, HIGH);
 }
 
 void loop() {
-
+  Serial.println(isWeatherMode);
   //see if there is anything in serial buffer
   if (XBEE.available() > 0)
   {
@@ -204,9 +223,15 @@ void loop() {
     {
       analogWrite(MRPWMPin, 0);
       analogWrite(MLPWMPin, 0);
-      digitalWrite(RaspberryPiInterrupt, HIGH);
-      delayMicroseconds(100);
-      digitalWrite(RaspberryPiInterrupt, LOW);
+      Temp_F = mySensor.readTempF();
+      Pressure = mySensor.readFloatPressure();
+      Rel_Humidity = mySensor.readFloatHumidity();
+      Serial.print('T');
+      Serial.println(Temp_F);
+      Serial.print('P');
+      Serial.println(Pressure);
+      Serial.print('H');
+      Serial.println(Rel_Humidity);
       while (Serial.available() <= 0);
       WeatherDanceChar = Serial.read();
       switch (WeatherDanceChar)
@@ -293,22 +318,23 @@ void calcVelB(void)
 
 void CloudyDance(void)
 {
-  
+
 }
 void StormyDance(void)
 {
-  
+
 }
 void SnowyDance(void)
 {
-  
+
 }
 void ClearDance(void)
 {
-  
+
 }
 void RainyDance(void)
 {
-  
+
 }
+
 
