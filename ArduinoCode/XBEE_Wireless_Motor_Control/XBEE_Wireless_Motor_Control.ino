@@ -54,9 +54,8 @@ const int D2pin = 3;
 const int SFpin = 2;
 
 //Sensor Pin declarations
-const int RaspberryPiInterrupt = 19;
-const int LineSensorPin = 12;
-const int PINGPin = 10;
+const int LineSensorPin = 13;
+const int PINGPin = 15;
 long duration, cm = 0;
 
 
@@ -336,5 +335,3 @@ void RainyDance(void)
 {
 
 }
-
-
