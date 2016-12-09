@@ -14,7 +14,6 @@ from sklearn import linear_model, datasets
 
 port = "/dev/ttyACM0"
 Serial = serial.Serial(port, 9600, timeout=5)
-print("connected to: " + Serial.portstr)
 
 def ClassifyPoint(InPoint):
      dataseta = pd.read_csv("/home/sherrardtr/CHAAC_Code/Python/data/weather_data.csv", header =-1)
@@ -37,15 +36,12 @@ def ClassifyPoint(InPoint):
 
 while True:
      msg = Serial.readline()
-     print("message:" + msg)
      if(msg != "" and 'T' in msg ):
           DataList = msg.split(',')
           Temp = DataList[0][1:]
           Pressure = DataList[1][1:]
           Humidity = DataList[2][1:]
-          print("Temp: " + Temp)
           Classification = ClassifyPoint([float(Temp),float(Humidity),float(Pressure)])
-	  print(Classification)
           if(Classification == 1):
                Serial.write(unicode('x'))
                Serial.write(unicode('u'))
