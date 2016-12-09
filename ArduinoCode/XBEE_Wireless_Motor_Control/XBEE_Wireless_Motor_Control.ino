@@ -6,16 +6,14 @@
  ** Date: 11/18/2016
  ** File: XBEE_Wireless_Motor_Control.ino
  *************************************************/
-#include <SparkFunBME280.h>
 #include "QuadDecoder.h"
-#include "Wire.h"
-#include "SPI.h"
 #include <ADC.h>
 #define mod 2249  // Number of ticks per wheel revolution
 #define XBEE Serial1
 //function Prototypes
 int readQD(int LineSensePin);
-long GetCentimetersFromPING(int PingPin);
+long microsecondsToCentimeters(long microseconds);
+long GetUltrasonicTOF();
 void calcVelB(void);
 void calcVelA(void);
 void CloudyDance(void);
@@ -43,7 +41,7 @@ volatile int diffB = 0; // difference between newCntB and oldCntB
 //Conversion Constants
 const double rpmConvert =  2.667; // rev/min = cnt/us * us/sec * sec/min * rev/cnt
 const int period = 10000; // in microseconds
-int LineThreshold = 1000;
+int LineThreshold = 800;
 
 //motor pin constants
 const int MLPWMPin = 5;
@@ -55,13 +53,13 @@ const int SFpin = 2;
 
 //Sensor Pin declarations
 const int LineSensorPin = 13;
-const int PINGPin = 15;
+const int EchoPin = 14;
+const int TriggerPin = 15;
 long duration, cm = 0;
-
-
+long Distance = 0;
 //Serial read variables
 int RMotorSpeed, LMotorSpeed = 0;
-char DirChar;
+char DirChar = 0;
 float LSerFloat = 0;
 float RSerFloat = 0;
 
@@ -71,7 +69,7 @@ bool isWeatherMode = false;
 //Predicted Weather Character
 char WeatherDanceChar = 0;
 //Sparkfun BME280 Sensor Object
-BME280 mySensor;
+
 float Temp_F = 0;
 float Pressure = 0;
 float Rel_Humidity = 0;
@@ -99,37 +97,38 @@ void setup() {
   //start timer interrupts
   velTimerA.begin(calcVelA, period);
   velTimerB.begin(calcVelB, period);
+
+  //Setup Ultrasonic
+  pinMode(EchoPin, INPUT);
+  pinMode(TriggerPin, OUTPUT);
   //Setup Sparkfun BME280
-  mySensor.settings.commInterface = I2C_MODE;
-  mySensor.settings.I2CAddress = 0x77;
-  mySensor.settings.runMode = 3; //Normal mode
-  mySensor.settings.tStandby = 0;
-  mySensor.settings.filter = 0;
-  mySensor.settings.tempOverSample = 1;
-  mySensor.settings.pressOverSample = 1;
-  mySensor.settings.humidOverSample = 1;
-  delay(10);
-  mySensor.begin();
 
   //Enable Motors
   digitalWrite(D2pin, HIGH);
+  Serial.println("Init is done!");
 }
 
 void loop() {
+  Serial.print("isWeatherMode ?: ");
   Serial.println(isWeatherMode);
-  //see if there is anything in serial buffer
+
+  Serial.print("DirChar is:");
+  Serial.println(DirChar);
   if (XBEE.available() > 0)
   {
     DirChar = XBEE.read();
-    if (DirChar == 's')
+    if (DirChar == 1)
     {
       isWeatherMode = !isWeatherMode;
     }
   }
-  if (!isWeatherMode)
+
+  if (isWeatherMode)
   {
+    int LineSensorVal = readQD(LineSensorPin);
+    long Distance = GetUltrasonicTOF();
     //On the Line, step off to the right
-    if (readQD(LineSensorPin) < LineThreshold)
+    if (LineSensorVal < LineThreshold)
     {
       digitalWrite(MLDirPin, HIGH);
       digitalWrite(MRDirPin, HIGH);
@@ -144,7 +143,7 @@ void loop() {
       analogWrite(MRPWMPin, 128);
       analogWrite(MLPWMPin, 128);
     }
-    if (GetCentimetersFromPING(PINGPin) < 16)
+    if (Distance < 8)
     {
       //turn right
       digitalWrite(MLDirPin, LOW);
@@ -167,12 +166,12 @@ void loop() {
       //go forward Until Line Detected
       digitalWrite(MLDirPin, HIGH);
       digitalWrite(MRDirPin, HIGH);
-      analogWrite(MRPWMPin, 255);
-      analogWrite(MLPWMPin, 255);
+      analogWrite(MRPWMPin, 128);
+      analogWrite(MLPWMPin, 128);
       while (readQD(LineSensorPin) < LineThreshold);
     }
   }
-  else if (isWeatherMode)
+  else if (!isWeatherMode)
   {
     //set motor speed state back to 0 for next update
     analogWrite(MRPWMPin, 0);
@@ -222,17 +221,6 @@ void loop() {
     {
       analogWrite(MRPWMPin, 0);
       analogWrite(MLPWMPin, 0);
-      Temp_F = mySensor.readTempF();
-      Pressure = mySensor.readFloatPressure();
-      Rel_Humidity = mySensor.readFloatHumidity();
-      Serial.print('T');
-      Serial.println(Temp_F);
-      Serial.print('P');
-      Serial.println(Pressure);
-      Serial.print('H');
-      Serial.println(Rel_Humidity);
-      while (Serial.available() <= 0);
-      WeatherDanceChar = Serial.read();
       switch (WeatherDanceChar)
       {
         case 's':
@@ -267,8 +255,9 @@ void loop() {
   Serial.print("LineSensor Read value: ");
   Serial.println(readQD(LineSensorPin));
   Serial.println();
-  Serial.print("isWeatherMode? ");
-  Serial.println(isWeatherMode);
+  Serial.print("Distance");
+  Serial.println(GetUltrasonicTOF());
+  Serial.println();
 }
 
 int readQD(int LineSensePin) {
@@ -283,19 +272,14 @@ int readQD(int LineSensePin) {
   return micros() - curTime;
 }
 
-long GetCentimetersFromPING(int pingPin)
+long GetUltrasonicTOF()
 {
-  pinMode(pingPin, OUTPUT);
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
-  pinMode(pingPin, INPUT);
-  duration = pulseIn(pingPin, HIGH);
-  return duration / 29 / 2;
+  digitalWrite(TriggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TriggerPin, LOW);
+  duration = pulseIn(EchoPin, HIGH);
+  return microsecondsToCentimeters(duration);
 }
-
 
 void calcVelA(void)
 {
@@ -313,6 +297,11 @@ void calcVelB(void)
   newCntB = encoderB->getCount();
   diffB = newCntB - oldCntB;
   oldCntB = newCntB;
+}
+
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
 }
 
 void CloudyDance(void)
