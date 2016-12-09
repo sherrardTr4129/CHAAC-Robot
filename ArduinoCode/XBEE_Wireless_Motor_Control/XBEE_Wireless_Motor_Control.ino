@@ -465,12 +465,15 @@ void readandupdate(float T, float HU, float PR)
   HUA = (HUA / 100.0);
   TA = (TA / 100.0);
   //Print These over Serial
-  Serial.print("Degrees F: ");
-  Serial.println(TA, 2);
-  Serial.print("Pressure: ");
-  Serial.println(PRA, 2);
-  Serial.print("%RH: ");
-  Serial.println(HUA, 2);
+  Serial.print('T');
+  Serial.print(TA);
+  Serial.print(',');
+  Serial.print('P');
+  Serial.print(PRA);
+  Serial.print(',');
+  Serial.print('H');
+  Serial.print(HUA);
+  Serial.print('\n');
 }
 
 void calcVelA(void)
