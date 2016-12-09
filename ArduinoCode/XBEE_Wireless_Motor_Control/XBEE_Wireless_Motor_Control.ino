@@ -1,4 +1,3 @@
-
 /************************************************
  ** Author: Trevor Sherrard
  ** Partner: Rodney Sanchez
@@ -265,12 +264,6 @@ void setup() {
 
 void loop() {
 
-  Serial.print("isWeatherMode ?: ");
-  Serial.println(isWeatherMode);
-
-  Serial.print("DirChar is:");
-  Serial.println(DirChar);
-
   if (XBEE.available() > 0)
   {
     DirChar = XBEE.read();
@@ -285,16 +278,10 @@ void loop() {
   {
     int LineSensorVal = readQD(LineSensorPin);
     long Distance = GetUltrasonicTOF();
-    Serial.println("Read Sensors");
 
     //On the Line, step off to the right
-    Serial.print("LineSensorValue: ");
-    Serial.println(LineSensorVal);
-    Serial.print("Distance: ");
-    Serial.println(Distance);
     if (LineSensorVal < LineThreshold)
     {
-      Serial.println("In Right");
       digitalWrite(MLDirPin, HIGH);
       digitalWrite(MRDirPin, HIGH);
       analogWrite(MRPWMPin, 0);
@@ -303,7 +290,6 @@ void loop() {
     //Off the line, step on from the left
     else if (LineSensorVal > LineThreshold)
     {
-      Serial.println("In Left");
       digitalWrite(MLDirPin, LOW);
       digitalWrite(MRDirPin, LOW);
       analogWrite(MRPWMPin, 160);
@@ -313,7 +299,6 @@ void loop() {
     if (Distance < 15)
     {
       //turn right
-      Serial.println("Too close!");
       digitalWrite(MLDirPin, HIGH);
       digitalWrite(MRDirPin, HIGH);
       analogWrite(MRPWMPin, 128);
@@ -426,16 +411,17 @@ void loop() {
     analogWrite(MRPWMPin, RMotorSpeed);
     analogWrite(MLPWMPin, LMotorSpeed);
   }
-
-  Serial.print("Speed L, MotorDir: " );
-  Serial.print(LMotorSpeed);
-  Serial.print(",");
-  Serial.println(digitalRead(MLDirPin));
-  Serial.print("Speed R, MotorDir: " );
-  Serial.print(RMotorSpeed);
-  Serial.print(",");
-  Serial.println(digitalRead(MRDirPin));
-  Serial.println();
+  /*
+    Serial.print("Speed L, MotorDir: " );
+    Serial.print(LMotorSpeed);
+    Serial.print(",");
+    Serial.println(digitalRead(MLDirPin));
+    Serial.print("Speed R, MotorDir: " );
+    Serial.print(RMotorSpeed);
+    Serial.print(",");
+    Serial.println(digitalRead(MRDirPin));
+    Serial.println();
+  */
 }
 
 int readQD(int LineSensePin) {
@@ -464,7 +450,6 @@ void readandupdate(float T, float HU, float PR)
   PRA = 0.0;
   HUA = 0.0;
   TA = 0.0;
-  Serial.print("Temperature: ");
   while (count < 101)
   {
     T = mySensor.readTempF();
@@ -479,19 +464,13 @@ void readandupdate(float T, float HU, float PR)
   PRA = (PRA / 100.0);
   HUA = (HUA / 100.0);
   TA = (TA / 100.0);
-  Serial.print(mySensor.readTempF(), 2);
-  Serial.print(TA, 2);
-  Serial.println(" degrees F");
+  //Print These over Serial
+  Serial.print("Degrees F: ");
+  Serial.println(TA, 2);
   Serial.print("Pressure: ");
-  Serial.print(PRA, 2);
-  Serial.println(" In");
-  Serial.print("Altitude: ");
-  Serial.print(mySensor.readFloatAltitudeMeters(), 2);
-  Serial.println("m");
+  Serial.println(PRA, 2);
   Serial.print("%RH: ");
-  Serial.print(HUA, 2);
-  Serial.println(" %");
-  Serial.println();
+  Serial.println(HUA, 2);
 }
 
 void calcVelA(void)
