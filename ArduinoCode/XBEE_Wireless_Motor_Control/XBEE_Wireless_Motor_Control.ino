@@ -342,6 +342,12 @@ void loop() {
     //set motor speed state back to 0 for next update
     analogWrite(MRPWMPin, 0);
     analogWrite(MLPWMPin, 0);
+    char ComChar;
+    if(Serial.available() > 0)
+    {
+      ComChar = Serial.read();
+      Serial.println("in here");
+    }
     if (DirChar == 'l')
     {
       LSerFloat = XBEE.parseFloat();
@@ -388,21 +394,26 @@ void loop() {
       analogWrite(MRPWMPin, 0);
       analogWrite(MLPWMPin, 0);
       readandupdate(T, HU, PR);
+    }
+    if(ComChar == 'x')
+    {
+      WeatherDanceChar = Serial.read();
       switch (WeatherDanceChar)
       {
-        case 's':
-          StormyDance();
-          break;
-        case 'c':
+        case 'u':
+          Serial.println("cloudy");
           CloudyDance();
           break;
-        case 'n':
+        case 'q':
+          StormyDance();
+          break;
+        case 'x':
           SnowyDance();
           break;
-        case 'l':
+        case 'y':
           ClearDance();
           break;
-        case 'r':
+        case 'z':
           RainyDance();
           break;
       }
@@ -501,7 +512,16 @@ long microsecondsToCentimeters(long microseconds)
 
 void CloudyDance(void)
 {
-
+  digitalWrite(MLDirPin, HIGH);
+  digitalWrite(MRDirPin, HIGH);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
+  digitalWrite(MLDirPin, LOW);
+  digitalWrite(MRDirPin, LOW);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
 }
 void StormyDance(void)
 {
