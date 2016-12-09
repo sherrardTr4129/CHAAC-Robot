@@ -294,7 +294,6 @@ void loop() {
       digitalWrite(MRDirPin, LOW);
       analogWrite(MRPWMPin, 160);
       analogWrite(MLPWMPin, 0);
-
     }
     if (Distance < 15)
     {
@@ -346,7 +345,6 @@ void loop() {
     if(Serial.available() > 0)
     {
       ComChar = Serial.read();
-      Serial.println("in here");
     }
     if (DirChar == 'l')
     {
@@ -525,17 +523,48 @@ void CloudyDance(void)
 }
 void StormyDance(void)
 {
-
+  digitalWrite(MLDirPin, LOW);
+  digitalWrite(MRDirPin, LOW);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
+  digitalWrite(MLDirPin, HIGH);
+  digitalWrite(MRDirPin, HIGH);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
 }
 void SnowyDance(void)
 {
-
+  digitalWrite(MLDirPin, HIGH);
+  digitalWrite(MRDirPin, LOW);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
+  digitalWrite(MLDirPin, LOW);
+  digitalWrite(MRDirPin, HIGH);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
 }
 void ClearDance(void)
 {
-
+  digitalWrite(MLDirPin, LOW);
+  digitalWrite(MRDirPin, HIGH);
+  analogWrite(MRPWMPin, 200);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
 }
 void RainyDance(void)
 {
-
+  digitalWrite(MLDirPin, LOW);
+  digitalWrite(MRDirPin, HIGH);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
+  digitalWrite(MLDirPin, HIGH);
+  digitalWrite(MRDirPin, LOW);
+  analogWrite(MRPWMPin, 128);
+  analogWrite(MLPWMPin, 128);
+  delay(1000);
 }
