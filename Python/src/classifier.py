@@ -8,13 +8,15 @@ Created on Wed Nov 16 18:32:26 2016
 
 import pandas as pd
 import numpy as np
+import sys
 import serial
 from sklearn import linear_model, datasets
 
-port = 'dev/ttyACMO'
+port = "/dev/ttyACM0"
 Serial = serial.Serial(port, 9600, timeout=5)
+print("connected to: " + Serial.portstr)
 
-def ClassifyPoint():
+def ClassifyPoint(InPoint):
      dataseta = pd.read_csv("/home/sherrardtr/CHAAC_Code/Python/data/weather_data.csv", header =-1)
      dataset=dataseta.as_matrix()
      data=np.zeros((365,8))
@@ -28,10 +30,37 @@ def ClassifyPoint():
      logreg = linear_model.LogisticRegression(C=1e5)
      logreg.fit(trainingdata, labels)
      testpoint=np.zeros((1,3))
-     testpoint=[10,24,30]
+     testpoint=InPoint
      expected=logreg.predict(testpoint)
-     ExpectedValue = expected
+     return expected
 
-while(True):
+
+while True:
      msg = Serial.readline()
+     print("message:" + msg)
+     if(msg != "" and 'T' in msg ):
+          DataList = msg.split(',')
+          Temp = DataList[0][1:]
+          Pressure = DataList[1][1:]
+          Humidity = DataList[2][1:]
+          print("Temp: " + Temp)
+          Classification = ClassifyPoint([float(Temp),float(Humidity),float(Pressure)])
+	  print(Classification)
+          if(Classification == 1):
+               Serial.write(unicode('x'))
+               Serial.write(unicode('u'))
+          elif(Classification == 2):
+              Serial.write('x')
+              Serial.write('q')
+          elif(Classification == 3):
+              Serial.write('x')
+              Serial.write('x')
+          elif(Classification == 4):
+              Serial.write('x')
+              Serial.write('y')
+          elif(Classification == 5):
+              Serial.write('x')
+              Serial.write('z')
+
+Serial.close()
 
