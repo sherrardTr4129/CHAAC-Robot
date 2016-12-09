@@ -48,7 +48,7 @@ volatile int diffB = 0; // difference between newCntB and oldCntB
 //Conversion Constants
 const double rpmConvert =  2.667; // rev/min = cnt/us * us/sec * sec/min * rev/cnt
 const int period = 10000; // in microseconds
-int LineThreshold = 350;
+int LineThreshold = 400;
 
 //motor pin constants
 const int MLPWMPin = 5;
@@ -324,19 +324,31 @@ void loop() {
       digitalWrite(MRDirPin, LOW);
       analogWrite(MRPWMPin, 255);
       analogWrite(MLPWMPin, 255);
-      delay(1500);
+      delay(1700);
       //Turn Left
       digitalWrite(MLDirPin, LOW);
       digitalWrite(MRDirPin, LOW);
       analogWrite(MRPWMPin, 255);
       analogWrite(MLPWMPin, 255);
-      delay(800);
+      delay(400);
+      //go forward
+      digitalWrite(MLDirPin, HIGH);
+      digitalWrite(MRDirPin, LOW);
+      analogWrite(MRPWMPin, 255);
+      analogWrite(MLPWMPin, 255);
+      delay(900);
+      //Turn Left
+      digitalWrite(MLDirPin, LOW);
+      digitalWrite(MRDirPin, LOW);
+      analogWrite(MRPWMPin, 255);
+      analogWrite(MLPWMPin, 255);
+      delay(150);
       //go forward Until Line Detected
       digitalWrite(MLDirPin, HIGH);
       digitalWrite(MRDirPin, LOW);
-      analogWrite(MRPWMPin, 128);
+      analogWrite(MRPWMPin, 160);
       analogWrite(MLPWMPin, 128);
-      while (readQD(LineSensorPin) > LineThreshold);
+      while (readQD(LineSensorPin) < 300);
     }
   }
 
@@ -386,10 +398,11 @@ void loop() {
         RMotorSpeed = 0;
       }
     }
-    else if (DirChar == 'w')
+    else if (DirChar == 2)
     {
       analogWrite(MRPWMPin, 0);
       analogWrite(MLPWMPin, 0);
+      readandupdate(T, HU, PR);
       switch (WeatherDanceChar)
       {
         case 's':
@@ -478,7 +491,6 @@ void readandupdate(float T, float HU, float PR)
   Serial.print("%RH: ");
   Serial.print(HUA, 2);
   Serial.println(" %");
-
   Serial.println();
 }
 
