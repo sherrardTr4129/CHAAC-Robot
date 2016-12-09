@@ -19,11 +19,9 @@ while(1)
     if b1 == 1
         fprintf(port, 1)
     end
-    
     if b2 == 1
         fprintf(port, 2)
     end
-    
     fprintf(port,  strcat('l', num2str((LeftY))))
     fprintf(port,  strcat('r', num2str((RightY))))
     pause(.1)
