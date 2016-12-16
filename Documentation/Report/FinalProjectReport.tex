@@ -1,0 +1,46 @@
+\documentclass[UTF8]{article}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\begin{document}
+
+\title{%
+ \Huge \textbf{EEEE485 Tech Memo}  \\
+  \begin{flushleft}
+   \Large \textbf{From:} Trevor Sherrard \\
+         \textbf{Partner:} Rodney Sanchez  \\
+         \textbf{To:}  Dr. Ferat Sahin -- Section L2 \\
+         \textbf{Course:} Robotics Systems [EEEE 485] \\
+         \textbf{Date Due:} 12/16/2016 \\
+		 \textbf{Subject:} Weather Detection Robot Project
+		 \end{flushleft}}
+\maketitle
+\newpage
+
+\section{Abstract}
+This project required the design of a differential drive robot with a specific characteristic. In this project the characteristic that was chosen to do weather detection. Logistic regression was implemented to classify the readings from an atmospheric sensor. Temperature, humidity and pressure were used to classify the weather a dataset of the Rochester area. Remote control was also performed using a Microsoft Xbox controller and a XBEE wireless radio. A Raspberry Pi was used to perform the actual classification of weather data, while the Teensy was used to read from sensors and control the motors accordingly.
+
+\section{Theory}
+
+\subsection{Multivariable Logistic Regression}
+Multivariable logistic regression is a model that separates the input into 2 categories, "on" or "off". This model predicts some probability for the latter categories. Multivariable logistic regression works on similar concepts except it produces a probability for all possible classes. To do so the algorithm first sends a vector of features through a set of weights then it sends the received value through a Softmax algorithm that produces a probability of for a given class. The highest probability is then chosen and compared to the actual class. The loss is then calculated using cross entropy layer to produce an error or loss. The weights are then changed by using stochastic gradient decent. Stochastic gradient decent takes in weights and updates them by performing the gradient of the error and subtracting it from the previous weight value.
+
+\subsection{XBEE Communication}
+Wireless radio communication was implemented through the use of XBEE modules. The modules were used to transmit characters that were send through MATLAB code. The characters would then be collected by a teensy that used the given information to change the mode of the robot, read from the weather sensor, or allow joystick control of the robot. XBEE radios use the ZigBee wireless protocal which, in this case, is effectively wireless USB serial.
+
+\subsection{$i^2C$ Protocol}
+$I^2C$ communication uses 2 types of line SDA, serial data line, and SCL, serial clock line. The bus in the I2c communication serves 2 porpuposes, master that generates a clock and initiates communication with the slaves. It can also be a slave node that takes in a clock when addressed by the master. It has different type of message protocol single were the master reads from the slave. The master can also read from the slave which is denoted as single message. Then there is combined messages were the master reads or writes from or to multiple slaves
+
+\subsection{Closed Loop Motor Control}
+
+
+\section{Results and Discussion}
+
+
+
+
+
+
+
+
+\end{document}
+
