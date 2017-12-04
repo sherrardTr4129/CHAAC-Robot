@@ -37,10 +37,10 @@ IntervalTimer velTimerB;
 
 
 // variables to be used in the timer interrupt
-volatile  int oldCntA = 0; // used to store the count the last time you calculated
+volatile int oldCntA = 0; // used to store the count the last time you calculated
 volatile int newCntA = 0; //  new value to use in calculating difference
 volatile int diffA = 0; // difference between newCntA and oldCntA
-volatile  int oldCntB = 0; // used to store the count the last time you calculated
+volatile int oldCntB = 0; // used to store the count the last time you calculated
 volatile int newCntB = 0; //  new value to use in calculating difference
 volatile int diffB = 0; // difference between newCntB and oldCntB
 
